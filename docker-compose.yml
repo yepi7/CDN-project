@@ -72,7 +72,6 @@ services:
 
   lb1p1:
     image: caddy:latest
-    #command: caddy reverse-proxy --from :80 --to cache1p1:80 cache2p1:80
     container_name: lb1p1
     volumes:
       - './Caddy-lb/lb1/:/etc/caddy/'
@@ -83,7 +82,6 @@ services:
 
   lb2p1:
     image: caddy:latest
-    #command: caddy reverse-proxy --from :80 --to cache1p1:80 cache2p1:80
     container_name: lb2p1
     volumes:
       - './Caddy-lb/lb1/:/etc/caddy/'
@@ -95,13 +93,11 @@ services:
   cache1p1:
     build: ./Caddy-Cache/
     image: caddy_cache1
-    #command: caddy file-server --browse
     container_name: cache1p1
     expose:
       - 80
       - 443
     volumes:
-       #- './Caddy-Cache/cache1:/usr/local/Caddy-Cache'
        - './Caddy-Cache/cache1/Caddyfile:/etc/caddy/Caddyfile'    	
     depends_on:
        - web1p1
@@ -113,13 +109,11 @@ services:
   cache2p1:
     build: ./Caddy-Cache/
     image: caddy_cache2
-    #command: caddy file-server --browse
     container_name: cache2p1
     expose:
       - 80
       - 443
     volumes:
-       #- './Caddy-Cache/cache1:/usr/local/Caddy-Cache'
        - './Caddy-Cache/cache2/Caddyfile:/etc/caddy/Caddyfile'    	
     depends_on:
        - web2p1
