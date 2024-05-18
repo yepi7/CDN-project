@@ -3,3 +3,9 @@
     file_server browse
 }
 
+:443 {
+    root * /usr/share/caddy/www
+    file_server browse
+
+    tls /etc/caddy/server-cert.pem /etc/caddy/server-key.pem
+}

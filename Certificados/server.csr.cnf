@@ -1,0 +1,22 @@
+[ req ]
+default_bits       = 2048
+default_md         = sha256
+distinguished_name = req_distinguished_name
+req_extensions     = req_ext
+
+[ req_distinguished_name ]
+countryName                = US
+stateOrProvinceName        = California
+localityName               = San Francisco
+organizationName           = Example Corp
+organizationalUnitName     = IT Department
+commonName                 = yourdomain.com
+
+[ req_ext ]
+subjectAltName = @alt_names
+
+[ alt_names ]
+DNS.1 = yourdomain.com
+DNS.2 = www.yourdomain.com
+IP.1 = 192.168.10.32
+IP.2 = 192.168.10.33

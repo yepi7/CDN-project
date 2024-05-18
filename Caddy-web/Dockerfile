@@ -17,5 +17,3 @@ RUN chmod u+x /bin/wireshark
 
 RUN apt-get update && apt-get install -y net-tools
 
-COPY ./Caddyfile /etc/caddy/Caddyfile
-

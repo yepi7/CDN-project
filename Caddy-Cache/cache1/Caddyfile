@@ -13,3 +13,11 @@
     }
 }
 
+:443 {
+    cache
+    reverse_proxy https://192.168.10.32 https://192.168.10.33 {
+    health_interval 5s # Intervalo de comprobación de salud (opcional)
+    health_timeout 2s # Tiempo de espera de la comprobación de salud (opcional)
+    health_status 2xx # Código de estado HTTP esperado para la comprobación de salud (opcional)
+    }
+}

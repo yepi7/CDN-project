@@ -30,8 +30,13 @@ services:
     restart: always
     ports:
       - 5901:5900
+      - 80
+      - 443
     volumes:
       - './cliente/resolv/resolv.conf:/etc/resolv.conf'
+      - './Certificados/ca-cert.pem:/etc/ssl/certs/ca-cert.pem'
+      - './Certificados/ca-cert.pem:/usr/local/share/ca-certificates/my-ca.crt'
+      - './Certificados/ca-cert.pem:/etc/ssl/certs/my-ca.crt'
     extra_hosts:
       - "lb1:192.168.10.12"
       - "lb2:192.168.10.13"
@@ -49,21 +54,31 @@ services:
     build: ./Caddy-web
     image: caddy:latest
     container_name: web1p1
+    expose:
+      - 80
+      - 443
     volumes:
       - './Caddy-web/web1/Caddyfile:/etc/caddy/Caddyfile'
       - './Caddy-web/web1/index.html:/usr/share/caddy/www/index.html'
+      - './Certificados/server-key.pem:/etc/caddy/server-key.pem'
+      - './Certificados/server-cert.pem:/etc/caddy/server-cert.pem'
     networks:
       cdn_network:
         ipv4_address: 192.168.10.32
-    restart: always
+    restart: unless-stopped
 
   web2p1:
     build: ./Caddy-web/
     image: caddy:latest
     container_name: web2p1
+    expose:
+      - 80
+      - 443
     volumes:
       - './Caddy-web/web2/Caddyfile:/etc/caddy/Caddyfile'
       - './Caddy-web/web2/index.html:/usr/share/caddy/www/index.html'
+      - './Certificados/server-key.pem:/etc/caddy/server-key.pem'
+      - './Certificados/server-cert.pem:/etc/caddy/server-cert.pem'
     networks:
       cdn_network:
         ipv4_address: 192.168.10.33
@@ -98,7 +113,10 @@ services:
       - 80
       - 443
     volumes:
-       - './Caddy-Cache/cache1/Caddyfile:/etc/caddy/Caddyfile'    	
+      - './Caddy-Cache/cache1/Caddyfile:/etc/caddy/Caddyfile'    	
+      - './Certificados/key.pem:/etc/caddy/key.pem'
+      - './Certificados/cert.pem:/etc/caddy/cert.pem'
+      - './Certificados/chain.pem:/etc/caddy/chain.pem'
     depends_on:
        - web1p1
     networks:
@@ -114,7 +132,9 @@ services:
       - 80
       - 443
     volumes:
-       - './Caddy-Cache/cache2/Caddyfile:/etc/caddy/Caddyfile'    	
+      - './Caddy-Cache/cache2/Caddyfile:/etc/caddy/Caddyfile'    	
+      - './Certificados/key.pem:/etc/caddy/key.pem'
+      - './Certificados/cert.pem:/etc/caddy/cert.pem'	
     depends_on:
        - web2p1
     networks:
