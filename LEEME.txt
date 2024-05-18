@@ -1,0 +1,31 @@
+RED:
+192.168.10.0/24
+
+Equipos:
+lb: .10/24
+cache: .20/24
+web: .30/24
+dns: .40/24
+cliente: .50/24
+
+vIP: 192.168.10.61/24
+--------------------------------
+# Desde el webserver1 para arrancar el servidor
+docker exec -it web1p1 /bin/sh;
+caddy file-server --listen 192.168.10.32:8080 &;
+exit
+
+# Desde el webserver2
+caddy file-server --listen 192.168.10.33:8080 &;
+
+# Desde el load balancer 1
+caddy run --config Caddyfile
+
+# para lanzar la cache
+caddy run --config usr/local/Caddy-Cache/Caddyfile
+caddy run --config usr/local/Caddy-Cache/configuration.json
+#Aqui es donde da el error porque no encuentra el archivo ache module
+#los archivos de la carpeta Caddy-Cache con _olric estan preparados para olric
+
+# Desde el cliente. Solo el puerto 
+curl http://192.168.10.12:8080

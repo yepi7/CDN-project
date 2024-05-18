@@ -1,0 +1,10 @@
+#
+{
+    order cache before rewrite
+    cache
+}
+
+:80 {
+    cache
+    reverse_proxy 192.168.10.32
+}

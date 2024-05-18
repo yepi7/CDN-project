@@ -1,0 +1,14 @@
+localhost {
+    root * /Caddy-web/web1
+    encode gzip
+    file_server
+    
+    # Enable caching
+    cache {
+        default_max_age 3600 # Set the default max age for cached resources (in seconds)
+        path /Caddy-Cache/cache1 # Set the path to the cache directory
+        matcher_regexp \.(css|js|png|jpg)$ # Define which types of files should be cached (in this case, CSS, JS, PNG, JPG)
+        endpoint 192.168.10.22:80 192.168.10.23:80 # Specify the IP addresses of cache containers
+    }
+}
+

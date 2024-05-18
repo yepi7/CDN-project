@@ -1,0 +1,139 @@
+services:
+
+  dnsp1:
+    build: ./pdns
+    image: dns_img
+    container_name: pdns
+    stdin_open: true
+    tty: true
+    restart: always
+    expose:
+      - 53
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.42
+    command: 
+      - /bin/bash
+      - -c
+      - |
+        service pdns start
+        tail -f /dev/null
+    volumes:
+      - './pdns/configdns:/etc/powerdns'
+      
+  cliente:
+    build: ./cliente
+    image: cliente_img
+    container_name: cliente
+    stdin_open: true
+    tty: true
+    restart: always
+    ports:
+      - 5901:5900
+    volumes:
+      - './cliente/resolv/resolv.conf:/etc/resolv.conf'
+    extra_hosts:
+      - "lb1:192.168.10.12"
+      - "lb2:192.168.10.13"
+      - "cache1:192.168.10.22"
+      - "cache2:192.168.10.23"
+      - "web1:192.168.10.32"
+      - "web2:192.168.10.33"
+      - "cliente:192.168.10.52"
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.52
+
+
+  web1p1:
+    build: ./Caddy-web
+    image: caddy:latest
+    container_name: web1p1
+    volumes:
+      - './Caddy-web/web1/Caddyfile:/etc/caddy/Caddyfile'
+      - './Caddy-web/web1/index.html:/usr/share/caddy/www/index.html'
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.32
+    restart: always
+
+  web2p1:
+    build: ./Caddy-web/
+    image: caddy:latest
+    container_name: web2p1
+    volumes:
+      - './Caddy-web/web2/Caddyfile:/etc/caddy/Caddyfile'
+      - './Caddy-web/web2/index.html:/usr/share/caddy/www/index.html'
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.33
+    restart: always
+
+
+  lb1p1:
+    image: caddy:latest
+    #command: caddy reverse-proxy --from :80 --to cache1p1:80 cache2p1:80
+    container_name: lb1p1
+    volumes:
+      - './Caddy-lb/lb1/:/etc/caddy/'
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.12
+    restart: always
+
+  lb2p1:
+    image: caddy:latest
+    #command: caddy reverse-proxy --from :80 --to cache1p1:80 cache2p1:80
+    container_name: lb2p1
+    volumes:
+      - './Caddy-lb/lb1/:/etc/caddy/'
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.13
+    restart: always
+
+  cache1p1:
+    build: ./Caddy-Cache/
+    image: caddy_cache1
+    #command: caddy file-server --browse
+    container_name: cache1p1
+    expose:
+      - 80
+      - 443
+    volumes:
+       #- './Caddy-Cache/cache1:/usr/local/Caddy-Cache'
+       - './Caddy-Cache/cache1/Caddyfile:/etc/caddy/Caddyfile'    	
+    depends_on:
+       - web1p1
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.22
+    restart: always
+    
+  cache2p1:
+    build: ./Caddy-Cache/
+    image: caddy_cache2
+    #command: caddy file-server --browse
+    container_name: cache2p1
+    expose:
+      - 80
+      - 443
+    volumes:
+       #- './Caddy-Cache/cache1:/usr/local/Caddy-Cache'
+       - './Caddy-Cache/cache2/Caddyfile:/etc/caddy/Caddyfile'    	
+    depends_on:
+       - web2p1
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.23
+    restart: always
+
+
+
+networks:
+  cdn_network:
+    ipam:
+      config:
+        - subnet: 192.168.10.0/24
+        
+        

@@ -1,0 +1,153 @@
+version: '3.7'
+
+services:
+
+  lb1p1:
+    image: caddy:latest
+    #command: caddy reverse-proxy --from :80 --to cache1p1:80 cache2p1:80
+    container_name: lb1p1
+    volumes:
+      - './Caddy-lb:/usr/local/Caddy-lb'
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.12
+    restart: always
+
+  lb2p1:
+    image: caddy:latest
+    #command: caddy reverse-proxy --from :80 --to cache1p1:80 cache2p1:80
+    container_name: lb2p1
+    volumes:
+      - './Caddy-lb:/usr/local/Caddy-lb'
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.13
+    restart: always
+
+  cache1p1:
+    build: ./Caddy-Cache/
+    image: caddy_cache1
+    #command: caddy file-server --browse
+    container_name: cache1p1
+    expose:
+      - 80
+      - 443
+    volumes:
+       #- './Caddy-Cache/cache1:/usr/local/Caddy-Cache'
+       - './Caddy-Cache/cache1/Caddyfile:/etc/caddy/Caddyfile'    	
+    depends_on:
+       - web1p1
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.22
+    restart: always
+    
+  cache2p1:
+    build: ./Caddy-Cache/
+    image: caddy_cache2
+    #command: caddy file-server --browse
+    container_name: cache2p1
+    expose:
+      - 80
+      - 443
+    volumes:
+       #- './Caddy-Cache/cache1:/usr/local/Caddy-Cache'
+       - './Caddy-Cache/cache2/Caddyfile:/etc/caddy/Caddyfile'    	
+    depends_on:
+       - web2p1
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.23
+    restart: always
+
+  web1p1:
+    build: ./Caddy-web
+    image: caddy:latest
+    container_name: web1p1
+    expose:
+      - 80
+      - 443
+    volumes:
+      - './Caddy-web/web1/index.html:/usr/share/caddy/index.html'
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.32
+    restart: always
+
+
+  web2p1:
+    build: ./Caddy-web
+    image: caddy:latest
+    container_name: web2p1
+    expose:
+      - 80
+      - 443
+    volumes:
+      - './Caddy-web/web2/index.html:/usr/share/caddy/index.html'
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.33
+    restart: always
+
+  dns1p1:
+    build: ./dns
+    image: powerdns/pdns-auth-45:4.5.2
+    ports:
+      - "5453:53/udp"
+      - "5453:53/tcp"
+    container_name: dns1p1
+    volumes:
+      - './powerdns:/etc/powerdns'
+    stdin_open: true
+    tty: true
+    restart: always
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.42
+    command: 
+      - /bin/bash
+      - -c
+      - |
+        service named start
+        tail -f /dev/null
+
+  dns2p1:
+    build: ./dns
+    image: powerdns/pdns-auth-45:4.5.2
+    ports:
+      - "5454:53/udp"
+      - "5454:53/tcp"
+    container_name: dns2p1
+    stdin_open: true
+    tty: true
+    restart: always
+    volumes:
+      - './powerdns:/etc/powerdns'
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.43
+    command: 
+      - /bin/bash
+      - -c
+      - |
+        service named start
+        tail -f /dev/null
+
+  cliente:
+    build: ./cliente
+    image: cliente_img
+    container_name: cliente_lb
+    stdin_open: true
+    tty: true
+    restart: always
+    ports:
+      - 5901:5900
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.52
+
+networks:
+  cdn_network:
+    ipam:
+      config:
+        - subnet: 192.168.10.0/24

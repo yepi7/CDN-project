@@ -1,0 +1,42 @@
+{
+    http_port 80
+    https_port 443
+    # Global logging
+    log {
+        output stdout
+    }
+}
+
+# Frontend configuration
+:80, :443 {
+    # Automatic HTTPS will take care of SSL, including certificate management
+    # Redirect HTTP to HTTPS automatically
+    redir https://{host}{uri}
+
+    # Backend selection and load balancing
+    reverse_proxy /stats*  {
+        to http://192.168.3.11:443 http://192.168.3.12:443
+        transport http {
+            tls
+            tls_insecure_skip_verify
+            alpn h2,http/1.1
+        }
+        lb_policy round_robin
+        health_path /health-check/health.html
+        health_status 2xx
+        health_interval 15s
+    }
+
+    # Default backend for other requests
+    reverse_proxy {
+        to http://192.168.3.11:443 http://192.168.3.12:443
+        transport http {
+            tls
+            tls_insecure_skip_verify
+            alpn h2,http/1.1
+        }
+        lb_policy round_robin
+    }
+}
+
+

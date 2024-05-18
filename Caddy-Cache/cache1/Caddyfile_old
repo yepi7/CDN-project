@@ -1,0 +1,78 @@
+{
+    order cache before rewrite
+    debug
+    log {
+        level debug
+    }
+    cache {
+        allowed_http_verbs GET POST
+        api {
+            prometheus
+            souin
+        }
+        cdn {
+            dynamic
+            strategy hard
+        }
+        regex {
+            exclude /test2.*
+        }
+        ttl 1000s
+        timeout {
+            backend 10s
+            cache 100ms
+        }
+        default_cache_control public
+    }
+}
+
+:4443
+respond "Hello World!"
+
+@match path /test1*
+@match2 path /test2*
+@matchdefault path /default
+@souin-api path /souin-api*
+
+cache @match {
+    ttl 5s
+}
+
+cache @match2 {
+    ttl 50s
+}
+
+cache @matchdefault {
+    ttl 5s
+}
+
+
+
+route /redis {
+    cache {
+        ttl 5s
+        redis {
+            configuration {
+                Network my-network
+                Addr 127.0.0.1:6379
+                Username user
+                Password password
+                DB 1
+                MaxRetries 1
+                MinRetryBackoff 5s
+                MaxRetryBackoff 5s
+                DialTimeout 5s
+                ReadTimeout 5s
+                WriteTimeout 5s
+                PoolFIFO true
+                PoolSize 99999
+                PoolTimeout 10s
+                MinIdleConns 100
+                MaxIdleConns 100
+                ConnMaxIdleTime 5s
+                ConnMaxLifetime 5s
+            }
+        }
+    }
+    respond "Hello redis"
+}

@@ -1,0 +1,140 @@
+version: '3.7'
+
+services:
+
+  lb1p1:
+    image: caddy:latest
+    #command: caddy reverse-proxy --from :80 --to cache1p1:80 cache2p1:80
+    container_name: lb1p1
+    volumes:
+      - './Caddy-lb:/usr/local/Caddy-lb'
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.12
+    restart: always
+
+  lb2p1:
+    image: caddy:latest
+    #command: caddy reverse-proxy --from :80 --to cache1p1:80 cache2p1:80
+    container_name: lb2p1
+    volumes:
+      - './Caddy-lb:/usr/local/Caddy-lb'
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.13
+    restart: always
+
+  cache1p1:
+    image: caddy:latest
+    command: caddy file-server --browse
+    container_name: cache1p1
+    volumes:
+       - './Caddy-Cache/cache1:/usr/local/Caddy-Cache'   	
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.22
+    restart: always
+
+  cache2p1:
+    image: caddy:latest
+    command: caddy file-server --browse
+    container_name: cache2p1
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.23
+    restart: always
+
+  web1p1:
+    build: ./Caddy-web
+    image: caddy:latest
+    container_name: web1p1
+    volumes:
+      - './Caddy-web/web1/index.html:/index.html'
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.32
+    restart: always
+
+  web2p1:
+    build: ./Caddy-web/
+    image: caddy:latest
+    container_name: web2p1
+    volumes:
+      - './Caddy-web/web2/index.html:/index.html'
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.33
+    restart: always
+
+  pdns:
+    build: pdns
+    container_name: pdns
+    image: interlegis/powerdns:4.4.0
+    links:
+      - "mysql:mysql"
+    ports:
+      - "5354:53"
+      - "5354:53/udp"
+      - "8088:8081"
+    environment:
+      - PDNSCONF_API_KEY=a_strong_api_key
+      - PDNSCONF_DNSUPDATE=yes
+      - SECALLZONES_CRONJOB=yes
+      - PDNSCONF_GMYSQL_USER=pdns
+      - PDNSCONF_GMYSQL_DBNAME=pdns
+      - PDNSCONF_GMYSQL_PASSWORD=pdnspw
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.42
+
+
+  mysql:
+    image: bitnami/mariadb:10.7.4-debian-11-r1
+    container_name: mysql
+    environment:
+      - MARIADB_ROOT_PASSWORD=mysqlrootpw
+      - MARIADB_REPLICATION_MODE=master
+      - MARIADB_REPLICATION_USER=repl_user
+      - MARIADB_REPLICATION_PASSWORD=repl_password
+      - MARIADB_DATABASE=pdns
+      - MARIADB_USER=pdns
+      - MARIADB_PASSWORD=pdnspw
+      - MYSQL_PWD=pdnspw
+    ports:
+      - 3306:3306
+    volumes:
+      - my_volumen:/bitnami/mariadb
+      - './mysql/comandos_mysql_contenedor.sh:/comandos_mysql_contenedor.sh'
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.43   
+
+  cliente:
+    build: ./cliente
+    image: cliente_img
+    container_name: cliente
+    stdin_open: true
+    tty: true
+    restart: always
+    ports:
+      - 5901:5900
+    volumes:
+      - './cliente/resolv/resolv.conf:/etc/resolv.conf'
+    networks:
+      cdn_network:
+        ipv4_address: 192.168.10.52
+        
+networks:
+  cdn_network:
+    ipam:
+      config:
+        - subnet: 192.168.10.0/24
+        
+   
+volumes:
+  my_volumen:
+    driver: local    
+
+
+
+

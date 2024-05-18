@@ -1,0 +1,14 @@
+; BIND reverse data file for empty rfc1918 zone
+;
+;
+@       IN      SOA     lb.com. root.lb.com. (
+                              1         ; Serial
+                           3600         ; Refresh
+                           1800         ; Retry
+                         604800         ; Expire
+                          86400 )       ; Negative Cache TTL
+;
+@       IN      NS      lb.com.
+@       IN      A       192.168.10.12
+        IN      A       192.168.10.13
+
