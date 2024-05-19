@@ -7,6 +7,11 @@ RUN echo '#! /bin/sh' > /bin/wireshark && \
     echo '/usr/sbin/tcpdump -i eth0 -w /tmp/capture/$1' >> /bin/wireshark && \
     chmod u+x /bin/wireshark
 
+# Agregar certificados creados por el equipo
+COPY ./Certificados/ca-cert.crt /usr/local/share/ca-certificates/ca-cert.crt
+COPY ./Certificados/ca-cert.pem /etc/ssl/certs/ca-cert.crt
+RUN update-ca-certificates
+
 RUN apt-get update && \
     apt-get install -y pdns-server pdns-backend-bind tcpdump nano && \
     apt-get clean && rm -rf /var/lib/apt/lists/*

@@ -46,6 +46,11 @@ RUN chmod +x /start.sh
 COPY resolv.conf /etc/
 COPY dhclient.conf /etc/dhcp/
 
+# Agregar certificados creados por el equipo
+COPY ./Certificados/ca-cert.pem /usr/local/share/ca-certificates/ca-cert.crt
+COPY ./Certificados/ca-cert.pem /etc/ssl/certs/ca-cert.crt
+RUN update-ca-certificates
+
 RUN apt-get update && apt-get install -y traceroute
 RUN apt-get update && apt-get install -y net-tools
 

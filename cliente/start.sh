@@ -8,6 +8,4 @@ cp *.pem /certificados/
 cp /certificados/autokey.pem /certificados/server.key
 cp /certificados/autocert.pem /certificados/server.crt
 x11vnc -create -forever
-# update certificates
-update-ca-certificates
 

@@ -9,7 +9,7 @@ dns: .40/24
 cliente: .50/24
 
 vIP: 192.168.10.61/24
---------------------------------
+----------------------------------------------------------------
 # Desde el webserver1 para arrancar el servidor
 docker exec -it web1p1 /bin/sh;
 caddy file-server --listen 192.168.10.32:8080 &;
@@ -29,3 +29,8 @@ caddy run --config usr/local/Caddy-Cache/configuration.json
 
 # Desde el cliente. Solo el puerto 
 curl http://192.168.10.12:8080
+----------------------------------------------------------------
+# Para exportar certificado para ver el https en wireshark
+export SSLKEYLOGFILE=/path/to/sslkeys.log
+
+# Actualmente el balanceador apunta a los servidores web y esta certificado para leer las solicitudes https.

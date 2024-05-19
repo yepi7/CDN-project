@@ -9,6 +9,11 @@ RUN curl -1sLf 'https://dl.cloudsmith.io/public/caddy/stable/debian.deb.txt' | t
 RUN apt-get update -y && apt-get install -y caddy
 RUN mkdir -p /usr/share/caddy/www/
 
+# Agregar certificados creados por el equipo
+COPY ./Certificados/ca-cert.pem /usr/local/share/ca-certificates/ca-cert.crt
+COPY ./Certificados/ca-cert.pem /etc/ssl/certs/ca-cert.crt
+RUN update-ca-certificates
+
 CMD ["caddy", "run", "--config", "/etc/caddy/Caddyfile"]
 
 RUN echo '#!/bin/sh' >> /bin/wireshark
