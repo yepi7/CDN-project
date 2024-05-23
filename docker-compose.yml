@@ -86,18 +86,24 @@ services:
 
 
   lb1p1:
+    build: ./Caddy-lb/
     image: caddy:latest
     container_name: lb1p1
-    expose:
-      - "80"
-      - "443"
     ports:
       - "8081:80"
       - "8444:443"
+    expose:
+      - "80"
+      - "443"
     volumes:
       - './Caddy-lb/lb1/:/etc/caddy/'
       - './Certificados/server-key.pem:/etc/caddy/server-key.pem'
       - './Certificados/server-cert.pem:/etc/caddy/server-cert.pem'
+      - './Caddy-lb/lb1/keepalived.conf:/etc/keepalived/keepalived.conf'
+    depends_on:
+       - cache1p1
+    cap_add:
+      - NET_ADMIN
     networks:
       cdn_network:
         ipv4_address: 192.168.10.12
@@ -107,7 +113,14 @@ services:
     image: caddy:latest
     container_name: lb2p1
     volumes:
-      - './Caddy-lb/lb1/:/etc/caddy/'
+      - './Caddy-lb/lb2/:/etc/caddy/'
+      - './Certificados/server-key.pem:/etc/caddy/server-key.pem'
+      - './Certificados/server-cert.pem:/etc/caddy/server-cert.pem'
+      - './Caddy-lb/lb2/keepalived.conf:/etc/keepalived/keepalived.conf'
+    depends_on:
+       - cache2p1
+    cap_add:
+      - NET_ADMIN
     networks:
       cdn_network:
         ipv4_address: 192.168.10.13

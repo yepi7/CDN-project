@@ -1,28 +1,25 @@
 :80 {
-    reverse_proxy / {
+    reverse_proxy {
         to 192.168.10.32:80 192.168.10.33:80
-        lb_policy round_robin # Política de balanceo de carga
-
+        lb_policy round_robin
         lb_retries 2
         fail_duration 10s
-
-        health_interval 5s # Intervalo de comprobación de salud (opcional)
-        health_timeout 2s # Tiempo de espera de la comprobación de salud (opcional)
-        health_status 2xx # Código de estado HTTP esperado para la comprobación de salud (opcional)
+        health_interval 5s
+        health_timeout 2s
+        health_status 2xx
     }
 }
+
 :443 {
     tls /etc/caddy/server-cert.pem /etc/caddy/server-key.pem
-    reverse_proxy / {
+    reverse_proxy {
         to https://192.168.10.32:443 https://192.168.10.33:443
-        lb_policy round_robin # Política de balanceo de carga
-
+        lb_policy round_robin
         lb_retries 2
         fail_duration 10s
-
-        health_interval 5s # Intervalo de comprobación de salud (opcional)
-        health_timeout 2s # Tiempo de espera de la comprobación de salud (opcional)
-        health_status 2xx # Código de estado HTTP esperado para la comprobación de salud (opcional)
+        health_interval 5s
+        health_timeout 2s
+        health_status 2xx
         transport http {
             tls
             tls_insecure_skip_verify
